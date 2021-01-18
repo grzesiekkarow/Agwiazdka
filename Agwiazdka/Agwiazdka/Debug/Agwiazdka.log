@@ -1,0 +1,5 @@
+﻿  Agwiazdka.cpp
+c:\users\savro\source\repos\agwiazdka\agwiazdka\agwiazdka.cpp(47): warning C4018: '<': signed/unsigned mismatch
+c:\users\savro\source\repos\agwiazdka\agwiazdka\agwiazdka.cpp(49): warning C4018: '<': signed/unsigned mismatch
+c:\users\savro\source\repos\agwiazdka\agwiazdka\agwiazdka.cpp(198): warning C4715: 'znajdzNastepny': not all control paths return a value
+  Agwiazdka.vcxproj -> C:\Users\savro\source\repos\Agwiazdka\Debug\Agwiazdka.exe
