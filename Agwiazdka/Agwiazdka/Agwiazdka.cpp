@@ -32,10 +32,10 @@ int main(void)
 	int rows = wym2 + 1;
 	Pole start = Pole();
 	start.x = 0;
-	start.y = 20;
+	start.y = 19;
 	start.wartość = 3;
 	Pole cel = Pole();
-	cel.x = 20;
+	cel.x = 19;
 	cel.y = 0;
 	lista_zamknieta.push_back(start);
 	Pole aktualny = start;
