@@ -1,27 +1,30 @@
+
 #include "stdafx.h"
 #include <iostream>
 #include <fstream>
 #include <math.h>
 #include <list>
+#include <vector>
 #include <algorithm> 
 using namespace std;
 
 struct Pole
 {
 	int x, y;
-	int wartość;
+	int wartosc;
 	int x_rodzica, y_rodzica;
 	double g;
 	double h;
 	double f;
 };
-list<Pole> lista_otwarta = {};
+vector<Pole> lista_otwarta = {};
 list<Pole> lista_zamknieta;
 Pole znajdzNastepny(double**, Pole, Pole);
 Pole znajdzNajlepszy(double**, Pole, Pole);
+Pole przeszukajListe();
 bool porownanieDwochPol(Pole, Pole);
 bool czyOdwiedzony(Pole);
-double **przypiszWartości(double**);
+double **przypiszWartosci(double**);
 double obliczF(Pole, Pole);
 double **naprawG(double**);
 
@@ -34,7 +37,7 @@ int main(void)
 	Pole start = Pole();
 	start.x = 19;
 	start.y = 0;
-	start.wartość = 3;
+	start.wartosc = 3;
 	Pole cel = Pole();
 	cel.x = 0;
 	cel.y = 19;
@@ -54,11 +57,11 @@ int main(void)
 	}
 	plik.close();
 	G = naprawG(G);
-	while (aktualny.x != cel.x && aktualny.y != cel.y)
+	while ((aktualny.x != cel.x) && (aktualny.y != cel.y))
 	{
 		aktualny = znajdzNastepny(G, cel, start);
 	}
-	G = przypiszWartości(G);
+	G = przypiszWartosci(G);
 
 
 	for (int i = 0; i<wym2; i++)
@@ -100,31 +103,14 @@ bool porownanieDwochPol(Pole pole, Pole porownywane)
 }
 Pole znajdzNajlepszy(double** G, Pole start, Pole cel)
 {
-	if (!lista_otwarta.empty())
-	{
-		Pole najlepszy = lista_otwarta.front();
-		int wielkosc = lista_otwarta.size();
-		for (int i = 0; i < wielkosc; i++)
-		{
-			Pole pomoc = lista_otwarta.front();
-			if (najlepszy.f > pomoc.f)
-			{
-				if(G[pomoc.x][pomoc.y]!=5)
-					najlepszy = pomoc;
-			}
-			lista_otwarta.pop_front();
-		}
+		Pole najlepszy = lista_otwarta.back();
+		najlepszy = przeszukajListe();
 		if (najlepszy.x == cel.x && najlepszy.y == cel.y)
 			return cel;
 		else
 		{
 			return najlepszy;
 		}
-	}
-	else 
-	{
-		return start;
-	}
 }
 Pole znajdzNastepny(double** G, Pole cel, Pole start)
 {
@@ -186,13 +172,13 @@ Pole znajdzNastepny(double** G, Pole cel, Pole start)
 	if (!lista_otwarta.empty())
 	{
 		nastepny = znajdzNajlepszy(G, start, cel);
-		nastepny.wartość = 3;
+		nastepny.wartosc = 3;
 		lista_zamknieta.push_back(nastepny);
 		return nastepny;
 	}
 	else if(znajdzNajlepszy(G, start, cel).x == cel.x && znajdzNajlepszy(G, start, cel).y == cel.y)
 	{
-		cel.wartość = 3;
+		cel.wartosc = 3;
 		lista_zamknieta.push_back(cel);
 		return cel;
 	}
@@ -201,16 +187,21 @@ Pole znajdzNastepny(double** G, Pole cel, Pole start)
 		cout << "Nie mozna dotrzec do celu \n";
 		return cel;
 	}
+	else
+	{
+		cout << "Nie mozna dotrzec do celu \n";
+		return cel;
+	}
 
 }
-double **przypiszWartości(double** G)
+double **przypiszWartosci(double** G)
 {
 	Pole pole = Pole();
 	int wielkosc = lista_zamknieta.size();
 	for (int j = 0; j < wielkosc; j++)
 	{
 		pole = lista_zamknieta.front();
-		G[pole.y][pole.x] = 3;
+		G[pole.x][pole.y] = 3;
 		lista_zamknieta.pop_front();
 	}
 	return	G;
@@ -232,4 +223,28 @@ double **naprawG(double** G)
 		}
 	}
 	return G;
+}
+Pole przeszukajListe()
+{
+	vector<Pole> pomoc = lista_otwarta;
+	Pole znaleziony = lista_otwarta.back();	
+	Pole pomocPole = Pole();
+	int wielkosc = lista_otwarta.size();
+	for (int i = 0; i < wielkosc; i++)
+	{
+		pomocPole = pomoc.back();
+		if (znaleziony.f > pomocPole.f)
+			znaleziony = pomocPole;
+		pomoc.pop_back();
+	}
+	vector<Pole>::iterator usun;
+	for (vector<Pole>::iterator i = lista_otwarta.end(); i !=lista_otwarta.begin();)
+	{
+		--i;
+		Pole tymczasowe = *i;
+		if ((znaleziony.x == tymczasowe.x) && (znaleziony.y == tymczasowe.y))
+			usun = i;
+	}
+	lista_otwarta.erase(usun);
+	return znaleziony;
 }
