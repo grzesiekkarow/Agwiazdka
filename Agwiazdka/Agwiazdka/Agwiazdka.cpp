@@ -1,4 +1,3 @@
-﻿
 #include "stdafx.h"
 #include <iostream>
 #include <fstream>
@@ -18,11 +17,13 @@ struct Pole
 };
 list<Pole> lista_otwarta = {};
 list<Pole> lista_zamknieta;
-Pole znajdzNastepny(double**, Pole cel);
+Pole znajdzNastepny(double**, Pole, Pole);
+Pole znajdzNajlepszy(double**, Pole, Pole);
 bool porownanieDwochPol(Pole, Pole);
 bool czyOdwiedzony(Pole);
 double **przypiszWartości(double**);
-double obliczF(Pole pole, Pole cel);
+double obliczF(Pole, Pole);
+double **naprawG(double**);
 
 int main(void)
 {
@@ -31,12 +32,12 @@ int main(void)
 	int wym1 = 20;
 	int rows = wym2 + 1;
 	Pole start = Pole();
-	start.x = 0;
-	start.y = 19;
+	start.x = 19;
+	start.y = 0;
 	start.wartość = 3;
 	Pole cel = Pole();
-	cel.x = 19;
-	cel.y = 0;
+	cel.x = 0;
+	cel.y = 19;
 	lista_zamknieta.push_back(start);
 	Pole aktualny = start;
 	double **G;
@@ -52,16 +53,17 @@ int main(void)
 		}
 	}
 	plik.close();
-	while (aktualny.x != cel.x &&  aktualny.y != cel.y)
+	G = naprawG(G);
+	while (aktualny.x != cel.x && aktualny.y != cel.y)
 	{
-		aktualny = znajdzNastepny(G, cel);
+		aktualny = znajdzNastepny(G, cel, start);
 	}
 	G = przypiszWartości(G);
 
 
-	for (int i = 1; i<wym2 + 1; i++)
+	for (int i = 0; i<wym2; i++)
 	{
-		for (int j = 1; j<wym1 + 1; j++)
+		for (int j = 0; j<wym1; j++)
 		{
 			cout << " " << G[i][j];
 		}cout << "\n";
@@ -83,9 +85,9 @@ bool czyOdwiedzony(Pole pole)
 	int wielkosc = pomocnicza.size();
 	for (int i = 0; i < wielkosc; i++)
 	{
+		pomoc = pomocnicza.back();
 		if (porownanieDwochPol(pole, pomoc))
 			return 1;
-		pomoc = pomocnicza.back();
 		pomocnicza.pop_back();
 	}
 	return 0;
@@ -96,7 +98,7 @@ bool porownanieDwochPol(Pole pole, Pole porownywane)
 		return 1;
 	return 0;
 }
-Pole znajdzNajlepszy()
+Pole znajdzNajlepszy(double** G, Pole start, Pole cel)
 {
 	if (!lista_otwarta.empty())
 	{
@@ -107,23 +109,28 @@ Pole znajdzNajlepszy()
 			Pole pomoc = lista_otwarta.front();
 			if (najlepszy.f > pomoc.f)
 			{
-				najlepszy = pomoc;
+				if(G[pomoc.x][pomoc.y]!=5)
+					najlepszy = pomoc;
 			}
 			lista_otwarta.pop_front();
 		}
-		return najlepszy;
+		if (najlepszy.x == cel.x && najlepszy.y == cel.y)
+			return cel;
+		else
+		{
+			return najlepszy;
+		}
 	}
 	else 
 	{
-		Pole pomoc = Pole();
-		return pomoc;
+		return start;
 	}
 }
-Pole znajdzNastepny(double** G, Pole cel)
+Pole znajdzNastepny(double** G, Pole cel, Pole start)
 {
 	Pole aktualny = lista_zamknieta.back();
 	Pole nastepny = Pole();
-	if (aktualny.y - 1 > 0 && G[aktualny.x][aktualny.y - 1] != 5)
+	if (aktualny.y - 1 >= 0)
 	{
 		Pole nastepny1 = Pole();
 		nastepny1.x = aktualny.x;
@@ -131,13 +138,13 @@ Pole znajdzNastepny(double** G, Pole cel)
 		nastepny1.f = obliczF(nastepny1, cel);
 		nastepny1.x_rodzica = aktualny.x;
 		nastepny1.y_rodzica = aktualny.y;
-		if (!czyOdwiedzony(nastepny1))
+		if (!czyOdwiedzony(nastepny1) && G[nastepny1.y][nastepny1.x]!=5)
 		{
 			lista_otwarta.push_back(nastepny1);
 		}
 
 	}
-	if (aktualny.y + 1 > 0 && G[aktualny.x][aktualny.y + 1] != 5)
+	if (aktualny.y + 1 < 20)
 	{
 		Pole nastepny2 = Pole();
 		nastepny2.x = aktualny.x;
@@ -145,12 +152,12 @@ Pole znajdzNastepny(double** G, Pole cel)
 		nastepny2.x_rodzica = aktualny.x;
 		nastepny2.y_rodzica = aktualny.y;
 		nastepny2.f = obliczF(nastepny2, cel);
-		if (!czyOdwiedzony(nastepny2))
+		if (!czyOdwiedzony(nastepny2) && G[nastepny2.y][nastepny2.x] != 5)
 		{
 			lista_otwarta.push_back(nastepny2);
 		}
 	}
-	if (aktualny.x - 1 > 0 && G[aktualny.x - 1][aktualny.y] != 5)
+	if (aktualny.x - 1 >= 0)
 	{
 		Pole nastepny3 = Pole();
 		nastepny3.x = aktualny.x - 1;
@@ -158,12 +165,12 @@ Pole znajdzNastepny(double** G, Pole cel)
 		nastepny3.x_rodzica = aktualny.x;
 		nastepny3.y_rodzica = aktualny.y;
 		nastepny3.f = obliczF(nastepny3, cel);
-		if (!czyOdwiedzony(nastepny3))
+		if (!czyOdwiedzony(nastepny3) && G[nastepny3.y][nastepny3.x] != 5)
 		{
 			lista_otwarta.push_back(nastepny3);
 		}
 	}
-	if (aktualny.x + 1 > 0 && G[aktualny.x + 1][aktualny.y] != 5)
+	if (aktualny.x + 1 < 20)
 	{
 		Pole nastepny4 = Pole();
 		nastepny4.x = aktualny.x + 1;
@@ -171,42 +178,40 @@ Pole znajdzNastepny(double** G, Pole cel)
 		nastepny4.x_rodzica = aktualny.x;
 		nastepny4.y_rodzica = aktualny.y;
 		nastepny4.f = obliczF(nastepny4, cel);
-		if (!czyOdwiedzony(nastepny4))
+		if (!czyOdwiedzony(nastepny4) && G[nastepny4.y][nastepny4.x] != 5)
 		{
 			lista_otwarta.push_back(nastepny4);
 		}
 	}
 	if (!lista_otwarta.empty())
 	{
-		nastepny = znajdzNajlepszy();
+		nastepny = znajdzNajlepszy(G, start, cel);
 		nastepny.wartość = 3;
 		lista_zamknieta.push_back(nastepny);
 		return nastepny;
 	}
-	else if(znajdzNajlepszy().x == 20 && znajdzNajlepszy().y == 20)
+	else if(znajdzNajlepszy(G, start, cel).x == cel.x && znajdzNajlepszy(G, start, cel).y == cel.y)
 	{
 		cel.wartość = 3;
 		lista_zamknieta.push_back(cel);
 		return cel;
 	}
-	else if(znajdzNajlepszy().x == 0 && znajdzNajlepszy().y == 0)
+	else if(znajdzNajlepszy(G, start, cel).x == start.x && znajdzNajlepszy(G, start, cel).y == start.y)
 	{
 		cout << "Nie mozna dotrzec do celu \n";
 		return cel;
 	}
 
 }
-
-
 double **przypiszWartości(double** G)
 {
 	Pole pole = Pole();
 	int wielkosc = lista_zamknieta.size();
 	for (int j = 0; j < wielkosc; j++)
 	{
-		pole = lista_zamknieta.back();
-		G[pole.x][pole.y] = 3;
-		lista_zamknieta.pop_back();
+		pole = lista_zamknieta.front();
+		G[pole.y][pole.x] = 3;
+		lista_zamknieta.pop_front();
 	}
 	return	G;
 }
@@ -216,4 +221,15 @@ pole.g = 1;
 pole.h = sqrt(pow(pole.x - cel.x, 2) + pow(pole.y - cel.y, 2));
 double f = pole.g + pole.h;
 return f;
+}
+double **naprawG(double** G)
+{
+	for  (int i = 0; i < 20;  i++)
+	{
+		for (int j = 0; j <20; j++)
+		{
+			G[i][j] = G[i + 1][j + 1];
+		}
+	}
+	return G;
 }
